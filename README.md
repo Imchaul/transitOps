@@ -64,7 +64,7 @@ transitops/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/<your-org>/transitops.git
+git clone https://github.com/Imchaul/transitOps.git
 cd transitops
 ```
 
