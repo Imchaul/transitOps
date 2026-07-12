@@ -73,6 +73,7 @@ cd transitops
 ```bash
 python -m venv .venv
 source .venv/Scripts/activate   # (for windows)
+pip install -r requirements.txt
 export PYTHONPATH="services/auth-service"
 python services/auth-service/src/app.py
 ```
