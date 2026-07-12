@@ -20,28 +20,34 @@ const router = createRouter({
 })
 
 // Global Navigation Guard
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const token = localStorage.getItem('access_token')
   const userRole = localStorage.getItem('role')
 
+  // If already logged in and going to login/register, redirect to appropriate dashboard
+  if ((to.name === 'login' || to.name === 'register') && token && userRole) {
+    if (userRole === 'Admin') return { name: 'admin' }
+    if (userRole === 'Fleet Manager') return { name: 'fleet' }
+    if (userRole === 'Driver') return { name: 'driver' }
+    if (userRole === 'Financial Analyst') return { name: 'finance' }
+  }
+
   // Not logged in -> Redirect to login
   if (to.name !== 'login' && to.name !== 'register' && !token) {
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
 
   // Role validation
   if (to.meta.role && to.meta.role !== userRole) {
     // If they have a role, push them to their proper dashboard
-    if (userRole === 'Admin') return next({ name: 'admin' })
-    if (userRole === 'Fleet Manager') return next({ name: 'fleet' })
-    if (userRole === 'Driver') return next({ name: 'driver' })
-    if (userRole === 'Financial Analyst') return next({ name: 'finance' })
+    if (userRole === 'Admin') return { name: 'admin' }
+    if (userRole === 'Fleet Manager') return { name: 'fleet' }
+    if (userRole === 'Driver') return { name: 'driver' }
+    if (userRole === 'Financial Analyst') return { name: 'finance' }
     
     // Fallback if no valid role
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
-
-  next()
 })
 
 export default router
