@@ -47,3 +47,20 @@ The backend utilizes modular Flask Blueprints to enforce role-specific access (A
 - **/api/fleet**: Fleet tracking, driver assignment, and maintenance logging
 - **/api/driver**: Trip acceptance and lifecycle updates
 - **/api/finance**: Fuel logs, expenses, and dashboard aggregates
+
+## 3. Vue.js Frontend (User Interface)
+The frontend is a modern, premium Single-Page Application built with Vue.js, Vue Router, and Vanilla CSS. It provides role-based Dashboards (Admin, Fleet Manager, Driver, Financial Analyst) that directly connect to the Python API.
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install the Node dependencies (if you haven't already):
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+   The UI will start running on `http://localhost:5173`. Open this link in your browser to interact with the application.
