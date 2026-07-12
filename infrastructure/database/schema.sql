@@ -199,3 +199,40 @@ BEGIN
     SET status = 'ON_TRIP'
     WHERE vehicle_id = NEW.vehicle_id;
 END;
+
+-- Rule: Enforce that user role must be 'Driver' to insert/update in drivers table.
+CREATE TRIGGER IF NOT EXISTS trg_drivers_validate_user_role
+BEFORE INSERT ON drivers
+FOR EACH ROW
+BEGIN
+    SELECT CASE
+        WHEN (SELECT role FROM users WHERE user_id = NEW.user_id) != 'Driver'
+        THEN RAISE(ABORT, 'User role must be Driver to have a driver profile')
+    END;
+END;
+
+-- Rule: Deleting/Updating role to non-driver automatically deletes driver profile.
+CREATE TRIGGER IF NOT EXISTS trg_users_role_update_delete_driver
+AFTER UPDATE OF role ON users
+FOR EACH ROW
+WHEN OLD.role = 'Driver' AND NEW.role != 'Driver'
+BEGIN
+    DELETE FROM drivers WHERE user_id = OLD.user_id;
+END;
+
+-- Rule: Updating role to driver automatically creates a default driver profile.
+CREATE TRIGGER IF NOT EXISTS trg_users_role_update_create_driver
+AFTER UPDATE OF role ON users
+FOR EACH ROW
+WHEN OLD.role != 'Driver' AND NEW.role = 'Driver'
+BEGIN
+    INSERT OR IGNORE INTO drivers (user_id, driver_name, phone_number, license_number, license_expiry, status)
+    VALUES (
+        NEW.user_id, 
+        'New Driver', 
+        '+1-555-0000', 
+        'TEMP-' || NEW.user_id, 
+        strftime('%Y-%m-%d', date('now', '+1 year')), 
+        'AVAILABLE'
+    );
+END;

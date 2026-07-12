@@ -182,6 +182,51 @@ def create_trip():
         conn.close()
         return jsonify({"error": str(e)}), 400
 
+@fleet_bp.route('/trips/<int:trip_id>', methods=['DELETE'])
+@role_required('Fleet Manager')
+def delete_trip(trip_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        # Only delete if status is CREATED or PENDING_ACCEPTANCE
+        cursor.execute('''
+            DELETE FROM trips
+            WHERE trip_id = ? AND status IN ('CREATED', 'PENDING_ACCEPTANCE')
+        ''', (trip_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "Trip not found or has already been accepted/started"}), 400
+        conn.close()
+        return jsonify({"message": "Trip assignment removed successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
+@fleet_bp.route('/trips/<int:trip_id>/approve', methods=['PUT'])
+@role_required('Fleet Manager')
+def approve_trip(trip_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        # Set status to COMPLETED if it's currently PENDING_REVIEW
+        cursor.execute('''
+            UPDATE trips
+            SET status = 'COMPLETED'
+            WHERE trip_id = ? AND status = 'PENDING_REVIEW'
+        ''', (trip_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({"error": "Trip not found or not pending review"}), 400
+        conn.close()
+        return jsonify({"message": "Trip completion approved successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify({"error": str(e)}), 400
+
 @fleet_bp.route('/maintenance', methods=['GET'])
 @role_required('Fleet Manager')
 def get_maintenance():

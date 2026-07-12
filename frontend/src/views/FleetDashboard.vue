@@ -215,6 +215,7 @@
               <th>Driver</th>
               <th>Vehicle</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -247,6 +248,17 @@
               </td>
               <td>
                 <span :class="['badge', trip.status.toLowerCase()]">{{ trip.status }}</span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button v-if="trip.status === 'PENDING_REVIEW'" @click="approveTrip(trip.trip_id)" class="btn-primary" style="padding: 0.4rem 0.8rem; width: auto; font-size: 0.85rem; background: #10b981;">
+                    Approve
+                  </button>
+                  <button v-if="['CREATED', 'PENDING_ACCEPTANCE'].includes(trip.status)" @click="deleteTrip(trip.trip_id)" class="btn-primary" style="padding: 0.4rem 0.8rem; width: auto; font-size: 0.85rem; background: #ef4444;">
+                    Remove
+                  </button>
+                  <span v-else-if="!['PENDING_REVIEW', 'CREATED', 'PENDING_ACCEPTANCE'].includes(trip.status)" style="color: var(--text-muted); font-size: 0.9rem;">—</span>
+                </div>
               </td>
             </tr>
             <tr v-if="filteredTrips.length === 0">
@@ -846,6 +858,31 @@ const completeMaintenanceRecord = async (id) => {
     await loadAllData()
   } catch (err) {
     triggerToast(err.message || 'Updating log failed.', false)
+  }
+}
+
+const approveTrip = async (id) => {
+  try {
+    await apiFetch(`/fleet/trips/${id}/approve`, {
+      method: 'PUT'
+    })
+    triggerToast('Trip completion approved successfully.')
+    await loadAllData()
+  } catch (err) {
+    triggerToast(err.message || 'Approval failed.', false)
+  }
+}
+
+const deleteTrip = async (id) => {
+  if (!confirm('Are you sure you want to remove this trip assignment?')) return
+  try {
+    await apiFetch(`/fleet/trips/${id}`, {
+      method: 'DELETE'
+    })
+    triggerToast('Trip assignment removed successfully.')
+    await loadAllData()
+  } catch (err) {
+    triggerToast(err.message || 'Removal failed.', false)
   }
 }
 
