@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    depends_on:
+      - auth-service
+      - fleet-service
+      - trip-service
+      - analytics-service
+    networks:
+      - transitops-network
+
+  # Services
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=transitops_auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transitops-network
+
+  fleet-service:
+    build:
+      context: ./services/fleet-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=transitops_fleet
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transitops-network
+
+  trip-service:
+    build:
+      context: ./services/trip-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=transitops_trip
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transitops-network
+
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=transitops_analytics
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - transitops-network
+
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=transitops
+      - POSTGRES_PASSWORD=transitops123
+      - POSTGRES_MULTIPLE_DATABASES=transitops_auth,transitops_fleet,transitops_trip,transitops_analytics
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/database/migration.sql:/docker-entrypoint-initdb.d/migration.sql
+      - ./infrastructure/database/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - transitops-network
+
+  # Nginx (optional, for production)
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway
+    networks:
+      - transitops-network
+
+networks:
+  transitops-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
