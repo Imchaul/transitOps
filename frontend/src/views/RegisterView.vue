@@ -17,6 +17,7 @@
         <input v-model="form.first_name" type="text" placeholder="First Name" class="input-field" required />
         <input v-model="form.last_name" type="text" placeholder="Last Name" class="input-field" required />
         <input v-model="form.license_number" type="text" placeholder="License Number" class="input-field" required />
+        <input v-model="form.license_expiry" type="date" placeholder="License Expiry" class="input-field" required title="License Expiry" />
         <input v-model="form.phone" type="text" placeholder="Phone Number" class="input-field" required />
       </div>
       
@@ -48,6 +49,7 @@ const form = ref({
   first_name: '',
   last_name: '',
   license_number: '',
+  license_expiry: '',
   phone: ''
 })
 
@@ -62,12 +64,10 @@ const handleRegister = async () => {
     }
     
     if (form.value.role === 'Driver') {
-      payload.driver_info = {
-        first_name: form.value.first_name,
-        last_name: form.value.last_name,
-        license_number: form.value.license_number,
-        phone: form.value.phone
-      }
+      payload.driver_name = `${form.value.first_name} ${form.value.last_name}`
+      payload.license_number = form.value.license_number
+      payload.license_expiry = form.value.license_expiry
+      payload.phone_number = form.value.phone
     }
 
     await apiFetch('/auth/register', {
