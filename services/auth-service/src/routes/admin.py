@@ -62,3 +62,24 @@ def reset_password():
         
     conn.close()
     return jsonify({"message": "Password reset successfully"}), 200
+
+@admin_bp.route('/users/<int:user_id>/toggle-access', methods=['PUT'])
+@role_required('Admin')
+def toggle_user_access(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get current status
+    user = cursor.execute('SELECT is_active FROM users WHERE user_id = ?', (user_id,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({"error": "User not found"}), 404
+        
+    new_status = 0 if user['is_active'] == 1 else 1
+    
+    cursor.execute('UPDATE users SET is_active = ? WHERE user_id = ?', (new_status, user_id))
+    conn.commit()
+    conn.close()
+    
+    action = "disabled" if new_status == 0 else "enabled"
+    return jsonify({"message": f"User access has been {action}"}), 200

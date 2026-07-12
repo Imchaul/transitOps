@@ -17,8 +17,22 @@ def init_db(app):
     
     if not database_uri:
         db_name = os.getenv("DB_NAME", "transitops.db")
-        # Format the SQLite URI (relative path to the project root/working directory)
-        database_uri = f"sqlite:///{db_name}"
+        
+        # Calculate absolute path for transitops/infrastructure/database
+        # __file__ is transitops/services/analytics-service/src/config/db.py
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        workspace_root = os.path.abspath(os.path.join(current_dir, "..", "..", "..", ".."))
+        db_folder = os.path.join(workspace_root, "infrastructure", "database")
+        
+        # Ensure the directory exists
+        os.makedirs(db_folder, exist_ok=True)
+        
+        # Formulate absolute file path
+        db_path = os.path.join(db_folder, db_name)
+        
+        # Format the SQLite URI with the absolute path
+        # Note: on Windows, we format as sqlite:///C:\path\to\db.db
+        database_uri = f"sqlite:///{db_path}"
     
     # 2. Configure Flask App Database Settings
     app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
