@@ -99,9 +99,9 @@ docker-compose up --build
 ## Default Test Credentials
 Use the following credentials to access the different role-based dashboards:
 - **Admin (Hardcoded):** `admin@transitops.local` / `admin123`
-- **Fleet Manager:** `fleet.mgr@transitops.local` / `password123`
-- **Financial Analyst:** `finance@transitops.local` / `password123`
-- **Driver:** `driver1@transitops.local` / `password123`
+- **Fleet Manager:** `fleet.mgr@transitops.local` / `password`
+- **Financial Analyst:** `finance@transitops.local` / `password`
+- **Driver:** `driver1@transitops.local` / `password`
 
 ## Business Rules Enforced
 
