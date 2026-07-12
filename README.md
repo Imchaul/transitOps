@@ -1,66 +1,124 @@
-# TransitOps
+# TransitOps — Smart Transport Operations Platform
 
-A modular fleet management backend featuring Role-Based Access Control (RBAC), JWT authentication, and automated database initialization.
+TransitOps is a centralized platform that digitizes vehicle, driver, dispatch, maintenance, and expense management for logistics and transport companies — replacing spreadsheets and manual logbooks with a single source of truth, enforced business rules, and operational insights.
 
-## Prerequisites
+Built in an 8-hour hackathon by a 4-member team.
+
+## The Problem
+
+Many logistics companies still rely on spreadsheets and manual logbooks to manage transport operations, leading to scheduling conflicts, underutilized vehicles, missed maintenance, expired driver licenses, inaccurate expense tracking, and poor operational visibility. TransitOps solves this by managing the complete lifecycle of transport operations — from vehicle registration and driver management to dispatching, maintenance, fuel logging, and analytics — in one place.
+
+## Target Users
+
+| Role | Responsibilities |
+|---|---|
+| **Fleet Manager** | Oversees fleet assets, maintenance, vehicle lifecycle, and operational efficiency |
+| **Driver** | Creates trips, assigns vehicles and drivers, monitors active deliveries |
+| **Safety Officer** | Ensures driver compliance, tracks license validity, monitors safety scores |
+| **Financial Analyst** | Reviews operational expenses, fuel consumption, maintenance costs, and profitability |
+
+## Features
+
+- 🔐 Secure authentication with Role-Based Access Control (RBAC)
+- 📊 Dashboard with live KPIs (Active Vehicles, Fleet Utilization, Active/Pending Trips, Drivers on Duty) with filters by type, status, and region
+- 🚚 Vehicle Registry — full CRUD with unique registration numbers and status tracking
+- 🧑‍✈️ Driver Management — full CRUD with license expiry and safety score tracking
+- 🗺️ Trip Management with automatic status transitions and business rule validation
+- 🔧 Maintenance workflow — automatically pulls vehicles out of dispatch rotation
+- ⛽ Fuel & expense logging with automatic operational cost calculation
+- 📈 Reports & Analytics — fuel efficiency, fleet utilization, operational cost, vehicle ROI
+- 📤 CSV export
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React (Vite), React Router, Zustand, Tailwind CSS, Axios |
+| Backend | Node.js, Express |
+| Database | PostgreSQL |
+| Auth | JWT-based authentication with RBAC middleware |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+| Charts | Chart.js |
+| Docs | Swagger / OpenAPI |
+
+## Project Structure
+
+```
+transitops/
+├── frontend/          # React app — core pages, routing, state, UI
+├── backend/           # Express API — auth, business logic, endpoints
+├── infrastructure/    # Docker, nginx, monitoring, DB scripts
+├── docs/              # API spec, architecture & DB diagrams
+├── docker-compose.yml
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
 - Node.js (v18+)
-- Python (3.9+)
+- PostgreSQL
+- npm
 
-## 1. Database Initialization
-This project uses SQLite for lightweight local development. The database schema, triggers, and seed data are initialized via a custom Node.js script.
+### 1. Clone the repo
 
-1. Install the SQLite drivers for Node:
-   ```bash
-   npm install sqlite3
-   ```
-2. Run the initialization script to build tables and insert the seed data (Admin, Drivers, Vehicles, etc.):
-   ```bash
-   node infrastructure/scripts/init-db.js
-   ```
+```bash
+git clone https://github.com/<your-org>/transitops.git
+cd transitops
+```
 
-## 2. Python API Backend (Auth & Services)
-The core backend API is built using Python, Flask, Flask-JWT-Extended, and Flask-CORS.
+### 2. Backend setup
 
-1. Activate your virtual environment (or create a new one):
-   ```bash
-   # Windows
-   python -m venv myenv
-   .\myenv\Scripts\activate
-   ```
-2. Install the required Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Start the API Gateway:
-   ```bash
-   # Make sure PYTHONPATH is set to the project root
-   $env:PYTHONPATH="."
-   python services/auth-service/src/app.py
-   ```
-   The API will start running on `http://127.0.0.1:8000`.
+```bash
+cd backend
+npm install
+cp .env.example .env   # fill in DB credentials and JWT secret
+npm run migrate        # run DB migrations
+npm run dev
+```
 
-## API Architecture & Blueprints
+Backend runs on `http://localhost:5000` by default.
 
-The backend utilizes modular Flask Blueprints to enforce role-specific access (A valid JWT token must be passed in the `Authorization: Bearer <token>` header):
-- **/api/auth**: Login and Registration (Generates the JWT)
-- **/api/admin**: User management and Role assignment
-- **/api/fleet**: Fleet tracking, driver assignment, and maintenance logging
-- **/api/driver**: Trip acceptance and lifecycle updates
-- **/api/finance**: Fuel logs, expenses, and dashboard aggregates
+### 3. Frontend setup
 
-## 3. Vue.js Frontend (User Interface)
-The frontend is a modern, premium Single-Page Application built with Vue.js, Vue Router, and Vanilla CSS. It provides role-based Dashboards (Admin, Fleet Manager, Driver, Financial Analyst) that directly connect to the Python API.
+```bash
+cd frontend
+npm install
+cp .env.example .env   # set VITE_API_URL to your backend URL
+npm run dev
+```
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install the Node dependencies (if you haven't already):
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   The UI will start running on `http://localhost:5173`. Open this link in your browser to interact with the application.
+Frontend runs on `http://localhost:5173` by default.
+
+### 4. (Optional) Run with Docker
+
+```bash
+docker-compose up --build
+```
+
+## Business Rules Enforced
+
+- Vehicle registration number must be unique
+- Retired or In Shop vehicles never appear in the dispatch selection
+- Drivers with expired licenses or Suspended status cannot be assigned to trips
+- A driver or vehicle already On Trip cannot be assigned to another trip
+- Cargo weight must not exceed the vehicle's maximum load capacity
+- Dispatching a trip automatically sets vehicle and driver status to On Trip
+- Completing a trip automatically restores both to Available
+- Cancelling a dispatched trip restores both to Available
+- Creating an active maintenance record sets vehicle status to In Shop
+- Closing maintenance restores the vehicle to Available (unless Retired)
+
+## Team
+
+| Member | Role |
+|---|---|
+| Member A | Backend & API (Node.js/Express + PostgreSQL, Auth/RBAC, business rules, Swagger docs) |
+| Member B | Frontend — Core Pages (routing, auth screens, Dashboard, Vehicle & Driver CRUD, state management) |
+| Member C | Frontend — Features & UI (Trip Management, Maintenance, Fuel & Expense logging, responsive design, dark mode) |
+| Member D | DevOps, Integration & Testing (Docker, CI/CD, API integration, business rule testing, Reports, charts) |
+
+## License
+
+This project was built for hackathon purposes. See `LICENSE` for details.
