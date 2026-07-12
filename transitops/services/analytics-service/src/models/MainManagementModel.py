@@ -101,3 +101,23 @@ class Expense(db.Model):
     
     # Relationships
     vehicle = db.relationship("Vehicle", back_populates="expenses")
+
+
+class ComplianceAudit(db.Model):
+    __tablename__ = 'compliance_audit'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    safety_officer_id = db.Column(db.Integer, db.ForeignKey('safety_officer.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    
+    safety_officer = db.relationship("SafetyOfficer", back_populates="compliance_audits")
+
+
+class ExpenseReview(db.Model):
+    __tablename__ = 'expense_review'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    financial_analyst_id = db.Column(db.Integer, db.ForeignKey('financial_analyst.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    
+    financial_analyst = db.relationship("FinancialAnalyst", back_populates="expense_reviews")
