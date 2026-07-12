@@ -71,11 +71,10 @@ cd transitops
 ### 2. Backend setup
 
 ```bash
-cd backend
-npm install
-cp .env.example .env   # fill in DB credentials and JWT secret
-npm run migrate        # run DB migrations
-npm run dev
+python -m venv .venv
+source .venv/Scripts/activate   # (for windows)
+export PYTHONPATH="services/auth-service"
+python services/auth-service/src/app.py
 ```
 
 Backend runs on `http://localhost:5000` by default.
